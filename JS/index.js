@@ -13,7 +13,6 @@ let turn = "white";
 let castel = true;
 
 
-
 function play(file) {
     let audioTrack = new Audio(file);
     audioTrack.preload = 'auto';
@@ -134,28 +133,28 @@ function Peice(id, type, html){
                 selectID = this.id;//id os selected peice
                 switch(this.type){
                     case "pawn":
-                        $("#"+this.id).css("border","3px solid green");
+                        $("#"+this.id).css("border","1px solid green");
                         movePawn(this);
                     break;
                     case "rock":
-                        $("#"+this.id).css("border","3px solid green");
+                        $("#"+this.id).css("border","1px solid green");
                         moveRock(this);
                     break;
                     case "bishop":
-                        $("#"+this.id).css("border","3px solid green");
+                        $("#"+this.id).css("border","1px solid green");
                         moveBishop(this);
                     break;
                     case "knight":
-                        $("#"+this.id).css("border","3px solid green");
+                        $("#"+this.id).css("border","1px solid green");
                         moveKnight(this);
     
                     break;
                     case "queen":
-                        $("#"+this.id).css("border","3px solid green");
+                        $("#"+this.id).css("border","1px solid green");
                         moveQueen(this);
                     break;
                     case "king":
-                        $("#"+this.id).css("border","3px solid green");
+                        $("#"+this.id).css("border","1px solid green");
                         moveKing(this);
                     break;
                     default:
