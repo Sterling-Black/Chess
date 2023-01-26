@@ -2,6 +2,10 @@ let v = 9;
 let ascii = 65;//The value of a in ascii
 let box = document.querySelectorAll(".box");
 let peice = document.querySelectorAll(".peice");
+let genID = [];
+let srch = false;
+let kwD = false;
+let kbD = false;
 
 let dot = "<div class='dot'>·</div>";
 let Cdot = "<div class='Cdot'>·</div>"
@@ -39,6 +43,7 @@ function Box(id){
             let id = selectID;//id of selected peice
             let selPei = peices[id];
             changePos(this);
+            // delete peices[this.inID];
 
             if(turn == "white")
             turn = "black";
@@ -100,8 +105,16 @@ function Box(id){
                 elem.addEventListener("click",()=>{
                     let id1 = elem.id;
                     peices[id1].click();
+                    // console.log("1+");
+                    // if((peices[id1].type=="king")&&(kbD||kwD)){
+                    //     console.log(id1);
+                    //     $("#"+id1).css("border","solid 5px red");
+                    // }
+                    
                 })
             });
+
+            searchTest();
         }
     }
 }
@@ -164,6 +177,15 @@ function Peice(id, type, html){
             }
     
             document.querySelectorAll(".peice").forEach(elem=>{
+                
+                if((peices[elem.id].type=="king")){
+                    if(kbD&&elem.id=="king-b"){
+                        $("#"+elem.id).css("border","solid 1px red");
+                    }else if(kwD&&elem.id=="king-w"){
+                        $("#"+elem.id).css("border","solid 1px red");
+                    }
+                    console.log(kwD,kbD);
+                }
                 elem.addEventListener("click",()=>{
                     peices[elem.id].click();
                 })
@@ -231,11 +253,12 @@ peice.forEach((pei)=>{
     let pos = pei.parentElement.id;
 
     // console.log(pos);
-
+    genID.push(id);
     peices[id] = new Peice(id, type, html);
 
     peices[id].color = color;
     peices[id].pos = pos;
+    // peices.length++;
     pei.addEventListener("click",()=>{
         box.forEach((elem)=>{
             elem.innerHTML = boxs[elem.id].value;
@@ -252,6 +275,7 @@ function refresh(){
         if(box1.empty==false){
             elem.innerHTML = box1.value;
         }else{
+            // console.log(elem.inID+" has being eaten");
             elem.innerHTML= "";
             box1.opColor = "";  
             box1.doted = false;
@@ -260,14 +284,7 @@ function refresh(){
     });
 }
 
-function empty(that){
-    that.empty = true;
-    that.doted = false;
-    that.opColor = "";
-    that.value = "";
-    that.ready = false;
-    that.inID = "";
-}
+
 
 function movePawn(that){
 
@@ -284,24 +301,29 @@ function movePawn(that){
         for(i=v+1;i<=v+n&&i<9;i++){//forward movement
             pos=leftH+i;
             // console.log(pos);
-            if(leftH>='A' && boxs[pos].empty==false && boxs[pos].opColor=="black" && r1){
+            if(leftH>='A' && boxs[pos].empty==false && boxs[pos].opColor=="black" && r1 && !srch){
 
                 let pID=boxs[pos].inID;
                 peices[pID].danger = true;
                 boxs[pos].ready = true;
                 $("#"+pID).css("border","solid 1px yellow");
 
+            }else if(leftH>='A' && boxs[pos].empty==false && boxs[pos].opColor=="black" && r1 && srch){
+
+                kingDanger(pos);
             }
             pos = rightH+i;
-            if(rightH<='H'  && boxs[pos].empty==false && boxs[pos].opColor=="black" && r1){
+            if(rightH<='H'  && boxs[pos].empty==false && boxs[pos].opColor=="black" && r1 && !srch){
 
                 let pID=boxs[pos].inID;
                 peices[pID].danger = true;
                 boxs[pos].ready = true;
                 $("#"+pID).css("border","solid 1px yellow");
 
+            }else if(rightH<='H'  && boxs[pos].empty==false && boxs[pos].opColor=="black" && r1 && srch){
+                kingDanger(pos);
             }
-            if(boxs[h+i].empty == true){
+            if(boxs[h+i].empty == true && !srch){
                 boxs[h+i].doted = true;
                 $("#"+h+i).html(dot);
             }else{ i=v+n+1; }
@@ -313,26 +335,30 @@ function movePawn(that){
         for(i=v-1;i>=v-n&&i>0;i--){//backward movement
             pos = leftH+i;
 
-            if(leftH>='A' && boxs[pos].empty==false && boxs[pos].opColor=="white" && r1){
+            if(leftH>='A' && boxs[pos].empty==false && boxs[pos].opColor=="white" && r1 && !srch){
 
                 let pID=boxs[pos].inID;
                 peices[pID].danger = true;
                 boxs[pos].ready = true;
                 $("#"+pID).css("border","solid 1px yellow");
 
+            }else if(leftH>='A' && boxs[pos].empty==false && boxs[pos].opColor=="white" && r1 && srch){
+                kingDanger(pos);
             }
             pos = rightH+i;
 
-            if(rightH<='H' && boxs[pos].empty==false && boxs[pos].opColor=="white" && r1){
+            if(rightH<='H' && boxs[pos].empty==false && boxs[pos].opColor=="white" && r1 && !srch){
 
                 let pID=boxs[pos].inID;
                 peices[pID].danger = true;
                 boxs[pos].ready = true;
                 $("#"+pID).css("border","solid 1px yellow");
 
+            }else if(rightH<='H' && boxs[pos].empty==false && boxs[pos].opColor=="white" && r1 && srch){
+                kingDanger(pos);
             }
 
-            if(boxs[h+i].empty == true){
+            if(boxs[h+i].empty == true && !srch){
                 boxs[h+i].doted = true;
                 $("#"+h+i).html(dot);
             }else{  i=v-n-1; }
@@ -356,45 +382,61 @@ function moveRock(that){
     i=leftH;
     pos = i+v;
     while(i>'@'&&i<'I'&&boxs[pos].empty){//left direction
-        boxs[pos].doted = true;
-        $("#"+pos).html(dot);
+        if(!srch){
+            boxs[pos].doted = true;
+            $("#"+pos).html(dot);
+        }
         i = String.fromCharCode(i.charCodeAt()-1);
         pos = i+v;
-    }if(i>'@'&&i<'I' && !boxs[pos].empty && boxs[pos].opColor!=color){
+    }if(i>'@'&&i<'I' && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
         danger(pos);
+    }else if(i>'@'&&i<'I' && !boxs[pos].empty && boxs[pos].opColor!=color){
+        kingDanger(pos);
     }
 
     i=rightH;    
     pos = i+v;
-    while(i>'@'&&i<'I'&&boxs[pos].empty){//right direction
-        boxs[pos].doted = true;
-        $("#"+pos).html(dot);
+    while(i>'@'&&i<'I'&&boxs[pos].empty && !srch){//right direction
+        if(!srch){
+            boxs[pos].doted = true;
+            $("#"+pos).html(dot);
+        }
         i = String.fromCharCode(i.charCodeAt()+1);
         pos = i+v;
-    }if(i>'@'&&i<'I'&& !boxs[pos].empty && boxs[pos].opColor!=color){
+    }if(i>'@'&&i<'I'&& !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
         danger(pos);
+    }else if(i>'@'&&i<'I'&& !boxs[pos].empty && boxs[pos].opColor!=color){
+        kingDanger(pos);
     }
 
     j=bottomV;    
     pos = h+j;
     while(j>0&&j<9&&boxs[pos].empty){//upward direction
-        boxs[pos].doted = true;
-        $("#"+pos).html(dot);
+        if(!srch){
+            boxs[pos].doted = true;
+            $("#"+pos).html(dot);
+        }
         j--;
         pos = h+j;
-    }if(j>0&&j<9&& !boxs[pos].empty && boxs[pos].opColor!=color){
+    }if(j>0&&j<9&& !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
         danger(pos);
+    }else if(j>0&&j<9&& !boxs[pos].empty && boxs[pos].opColor!=color ){
+        kingDanger(pos);
     }
 
     j=topV;    
     pos = h+j;
     while(j>0&&j<9&&boxs[pos].empty){//downward direction
-        boxs[pos].doted = true;
-        $("#"+pos).html(dot);
+        if(!srch){
+            boxs[pos].doted = true;
+            $("#"+pos).html(dot);
+        }
         j++; 
         pos = h+j;
-    }if(j>0&&j<9&& !boxs[pos].empty  && boxs[pos].opColor!=color){
+    }if(j>0&&j<9&& !boxs[pos].empty  && boxs[pos].opColor!=color && !srch){
         danger(pos);
+    }else if(j>0&&j<9&& !boxs[pos].empty  && boxs[pos].opColor!=color ){
+        kingDanger(pos);
     }
 
 }
@@ -415,55 +457,72 @@ function moveBishop(that){
     j=topV;
     pos = i+j;
     while((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty){//left-top direction
-        boxs[pos].doted = true;
-        $("#"+pos).html(dot);
+        if(!srch){
+            boxs[pos].doted = true;
+            $("#"+pos).html(dot);
+        }
         i = String.fromCharCode(i.charCodeAt()-1);
         j++;
         pos = i+j;
-    }if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+    }if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
         danger(pos);
+    }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+        kingDanger(pos);
     }
 
 
     i=rightH;
     j=topV;
     pos = i+j;
-    while((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty){//right-top direction
-        boxs[pos].doted = true;
-        $("#"+pos).html(dot);
+    while((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !srch){//right-top direction
+        if(!srch){
+            boxs[pos].doted = true;
+            $("#"+pos).html(dot);
+        }
         i = String.fromCharCode(i.charCodeAt()+1);
         j++;
         pos = i+j;
-    }if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+    }if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
         danger(pos);
+    }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+        kingDanger(pos);
     }
 
 
     i=rightH;
     j=bottomV;
     pos = i+j;
-    while((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty){//right-bottom direction
-        boxs[pos].doted = true;
-        $("#"+pos).html(dot);
+    while((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !srch){//right-bottom direction
+        if(!srch){
+            boxs[pos].doted = true;
+            $("#"+pos).html(dot);
+        }
         i = String.fromCharCode(i.charCodeAt()+1);
         j--;
         pos = i+j;
-    }if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+    }if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
         danger(pos);
+    }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+        kingDanger(pos);
     }
+    
 
 
     i=leftH;
     j=bottomV;
     pos = i+j;
     while((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty){//left-bottom direction
-        boxs[pos].doted = true;
-        $("#"+pos).html(dot);
+        if(!srch){
+            boxs[pos].doted = true;
+            $("#"+pos).html(dot);
+        }
         i = String.fromCharCode(i.charCodeAt()-1);
         j--;
         pos = i+j;
-    }if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+    }if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
         danger(pos);
+    }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+        kingDanger(pos);
     }
 }
 
@@ -483,10 +542,10 @@ function moveKnight(that){
         j = v+k;
         pos = i+j;
         // console.log(pos);
-        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty){
+        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !srch){
             boxs[pos].doted = true;
             $("#"+pos).html(dot);
-        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
             danger(pos);
         }
     }
@@ -496,10 +555,10 @@ function moveKnight(that){
         j = v+k;
         pos = i+j;
         // console.log(pos);
-        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty){
+        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !srch){
             boxs[pos].doted = true;
             $("#"+pos).html(dot);
-        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
             danger(pos);
         }
     }
@@ -509,10 +568,10 @@ function moveKnight(that){
         i =  String.fromCharCode(h.charCodeAt()+k);
         pos = i+j;
         // console.log(pos);
-        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty){
+        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !srch){
             boxs[pos].doted = true;
             $("#"+pos).html(dot);
-        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
             danger(pos);
         }
     }
@@ -522,10 +581,10 @@ function moveKnight(that){
         i =  String.fromCharCode(h.charCodeAt()+k);
         pos = i+j;
         // console.log(pos);
-        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty){
+        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !srch){
             boxs[pos].doted = true;
             $("#"+pos).html(dot);
-        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
             danger(pos);
         }
     }
@@ -555,10 +614,10 @@ function moveKing(that){
         j = v+k;
         pos = i+j;
         // console.log(pos);
-        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty){
+        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !srch){
             boxs[pos].doted = true;
             $("#"+pos).html(dot);
-        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
             danger(pos);
         }
     }
@@ -568,10 +627,10 @@ function moveKing(that){
         j = v+k;
         pos = i+j;
         // console.log(pos);
-        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty){
+        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !srch){
             boxs[pos].doted = true;
             $("#"+pos).html(dot);
-        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
             danger(pos);
         }
     }
@@ -581,10 +640,10 @@ function moveKing(that){
         i =  String.fromCharCode(h.charCodeAt()+k);
         pos = i+j;
         // console.log(pos);
-        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty){
+        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !srch){
             boxs[pos].doted = true;
             $("#"+pos).html(dot);
-        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
             danger(pos);
         }
     }
@@ -594,10 +653,10 @@ function moveKing(that){
         i =  String.fromCharCode(h.charCodeAt()+k);
         pos = i+j;
         // console.log(pos);
-        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty){
+        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !srch){
             boxs[pos].doted = true;
             $("#"+pos).html(dot);
-        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color){
+        }else if((i>'@'&&i<'I' &&j>0&&j<9) && !boxs[pos].empty && boxs[pos].opColor!=color && !srch){
             danger(pos);
         }
     }
@@ -608,7 +667,7 @@ function moveKing(that){
         let pos = i+j;
         let rpos = String.fromCharCode(h.charCodeAt()+3)+j;
         let rock = peices[boxs[rpos].inID];
-        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !boxs[rpos].empty && boxs[rpos].opColor == color && rock.type=="rock"  && rock.firstMove){
+        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !boxs[rpos].empty && boxs[rpos].opColor == color && rock.type=="rock"  && rock.firstMove && !srch){
             boxs[pos].doted = true;
             $("#"+pos).html(Cdot);
             castel = true;
@@ -617,7 +676,7 @@ function moveKing(that){
         pos = i+j;
         rpos = String.fromCharCode(h.charCodeAt()-4)+j;
         rock = peices[boxs[rpos].inID];
-        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !boxs[rpos].empty && boxs[rpos].opColor == color && rock.type=="rock"  && rock.firstMove){
+        if((i>'@'&&i<'I'&&j>0&&j<9) && boxs[pos].empty && !boxs[rpos].empty && boxs[rpos].opColor == color && rock.type=="rock"  && rock.firstMove && !srch){
             boxs[pos].doted = true;
             $("#"+pos).html(Cdot);
             castel = true;
@@ -625,20 +684,27 @@ function moveKing(that){
     }
 }
 
+function empty(that){
+    that.empty = true;
+    that.doted = false;
+    that.opColor = "";
+    that.value = "";
+    that.ready = false;
+    that.inID = "";
+}
 
 function danger(pos){
     let pID=boxs[pos].inID;
     if(peices[pID].type=="king"){
-        console.log("checkMate");
+        console.log("check");
         peices[pID].danger = true;
         boxs[pos].ready = true;
-        $("#"+pID).css("border","solid 3px red");
-        play("Sound/checkmate.mp3");
-        play("Sound/1.mp3");
+        $("#"+pID).css("border","solid 1px red");
+        play("Sound/try.dat");
     }else{
-    peices[pID].danger = true;
-    boxs[pos].ready = true;
-    $("#"+pID).css("border","solid 3px yellow");
+        peices[pID].danger = true;
+        boxs[pos].ready = true;
+        $("#"+pID).css("border","solid 1px yellow");
     }
 }
 
@@ -667,10 +733,65 @@ function changePos(that){
     select = "";
     selectID = "";
 
-    // play();
-
-    
-
-
-
+    // searchTest();
 }
+
+
+function searchTest(){
+    srch = true;
+    document.querySelectorAll(".box").forEach(elem=>{
+        let id1 = elem.id;
+        let id2 = boxs[id1].inID;
+
+        if(id2!=""){
+            let pei = peices[id2];
+            switch(pei.type){
+                case "pawn":
+                    
+                    movePawn(pei);
+                break;
+                case "rock":
+                    moveRock(pei);
+                break;
+                case "bishop":
+                    moveBishop(pei);
+                break;
+                case "knight":
+                    moveKnight(pei);
+
+                break;
+                case "queen":
+                    moveQueen(pei);
+                break;
+                // case "king":
+                //     moveKing(pei);
+                // break;
+                // default:
+
+                // break;
+            }
+        }
+    });
+    srch=false;
+}
+
+function kingDanger(pos){
+    let pID=boxs[pos].inID;
+    if(peices[pID].type=="king"){
+        if(peices[pID].color=="black"){
+            kbD=true;
+            console.log("oh oh "+kwD+kbD);
+        }else if(peices[pID].color=="white"){
+            kwD=true;
+            console.log("oh oh "+kwD+kbD);
+        }
+        // $("#"+pID).css("border","solid 5px red");
+        danger(pos);
+    }
+}
+// let i=0;
+// for(i=0;i<peices.length;i++){
+//     var pei = peices[0];
+//     console.log(pei+"123");
+// }
+
