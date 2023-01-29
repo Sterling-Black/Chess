@@ -1,10 +1,10 @@
 body{
     margin: 0;
     padding: 0;
-    /* overflow: hidden; */
+    overflow: hidden;
 }
 .table{
-    height: 100vh;
+    height: 102vh;
     position: relative;
 }
 .table-img{
@@ -41,7 +41,7 @@ body{
     align-items: center;
     cursor: default;
 }
-.b{/*black boxes*/
+.d{/*black boxes*/
     background-image: url('../images/BG3.jpg');
 }
 
@@ -143,10 +143,30 @@ body{
     .chess-ground{
         border: 1px solid  #000000;
     }
+    
+    
 
     @media screen and (max-width: 720px) {
         .y, .x{
             font-size: 0.5em;
         }
+        .dot, .Cdot{
+            font-size: 4.2rem;
+        }
+    }
+}
+@media screen and (max-height: 600px){
+    .chess-board{
+        width: 70vh;
+        height: 70vh;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+    }
+    .chess-ground{
+        border: 1px solid  #000000;
+    }
+    .dot, .Cdot{
+        font-size: 4.2rem;
     }
 }
