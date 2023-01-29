@@ -257,7 +257,7 @@ function findPeice(boxVal){
             return '<img src="images/Queen'+num+'.png" class="peice queen '+color+'" id="q'+color+'" />'
         break;
         case "k":
-            return '<img src="images/King'+num+'.png" class="peice king '+color+'" id="k'+color+'" />'
+            return '<img src="images/K'+num+'.png" class="peice king '+color+'" id="k'+color+'" />'
         break;
         case "p":
             return '<img src="images/Pawn'+num+'.png" class="peice pawn '+color+'" />'
